@@ -183,34 +183,76 @@
   if (data.contacts.discord) { $("#discord-link").href = data.contacts.discord; $("#discord-link").hidden = false; }
   $("#year").textContent = new Date().getFullYear();
 
-  // Decorative signal lines; staggered CSS motion is not tied to audio playback.
-  const lines = $("#signal-lines");
-  for (let row = 0; row < 32; row++) {
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    const points = [];
-    for (let x = 25; x <= 415; x += 3) {
-      const envelope = Math.sin((x - 25) / 390 * Math.PI) ** 1.6;
-      const y = 95 + row * 5 + Math.sin(x / 43 + row * .105) * 50 * envelope + Math.sin(x / 22 - row * .08) * 24 * envelope;
-      points.push(`${x === 25 ? "M" : "L"}${x},${y.toFixed(2)}`);
+  // Interfering waves form a flowing ribbon. This is decorative, not audio data.
+  function setupSignalArt() {
+    const lines = $("#signal-lines");
+    const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
+    const paths = Array.from({ length: 32 }, () => {
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      // Keep SVG paint on the element so the ribbon never falls back to black fill.
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", "url(#signal-color) #dfa778");
+      path.setAttribute("stroke-width", ".85");
+      path.setAttribute("opacity", ".75");
+      path.setAttribute("vector-effect", "non-scaling-stroke");
+      lines.append(path);
+      return path;
+    });
+    const samples = Array.from({ length: 101 }, (_, index) => {
+      const u = index / 100;
+      return { x: 20 + u * 400, phase: u * Math.PI * 2, envelope: Math.sin(u * Math.PI) ** .9 };
+    });
+    function draw(time) {
+      paths.forEach((path, row) => {
+        const depth = row / (paths.length - 1) - .5;
+        const points = samples.map(({ x, phase, envelope }, index) => {
+          const swell = Math.sin(phase - time * .65 + depth * 1.8) * 47;
+          const ripple = Math.sin(phase * 2 + time * .4 - depth * 1.3) * 21;
+          const drift = Math.sin(phase * .5 - time * .3) * 9;
+          const spread = depth * 88 * (.25 + .75 * envelope);
+          // Max displacement is 121: all phases fit the 280-high viewBox with padding.
+          const y = 140 + spread + (swell + ripple + drift) * envelope;
+          return `${index ? "L" : "M"}${x},${y.toFixed(2)}`;
+        });
+        path.setAttribute("d", points.join(" "));
+      });
     }
-    path.setAttribute("d", points.join(" "));
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "url(#signal-color)");
-    path.setAttribute("stroke-width", ".85");
-    path.setAttribute("opacity", ".75");
-    path.style.animationDelay = `${-row * .18}s`;
-    lines.append(path);
+    let frame = null;
+    let visible = false;
+    let lastPaint = null;
+    let elapsed = 0;
+    function animate(now) {
+      if (lastPaint === null) lastPaint = now;
+      const delta = now - lastPaint;
+      // Cap drawing at 30 fps and avoid jumps after backgrounding the page.
+      if (delta >= 1000 / 30) {
+        elapsed += Math.min(delta, 100) / 1000;
+        draw(elapsed);
+        lastPaint = now;
+      }
+      frame = requestAnimationFrame(animate);
+    }
+    function updateMotion() {
+      const active = visible && !document.hidden && !motionPreference.matches;
+      if (active && frame === null) {
+        lastPaint = null;
+        frame = requestAnimationFrame(animate);
+      } else if (!active && frame !== null) {
+        cancelAnimationFrame(frame);
+        frame = null;
+      }
+      if (motionPreference.matches) draw(0);
+    }
+    draw(0);
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      updateMotion();
+    });
+    observer.observe($(".signal-art"));
+    document.addEventListener("visibilitychange", updateMotion);
+    motionPreference.addEventListener("change", updateMotion);
   }
-  const signalArt = $(".signal-art");
-  let signalVisible = true;
-  const updateSignalMotion = () => signalArt.classList.toggle("is-paused", !signalVisible || document.hidden);
-  const signalObserver = new IntersectionObserver(([entry]) => {
-    signalVisible = entry.isIntersecting;
-    updateSignalMotion();
-  });
-  signalObserver.observe(signalArt);
-  document.addEventListener("visibilitychange", updateSignalMotion);
-  updateSignalMotion();
+  setupSignalArt();
   for (let i = 0; i < 115; i++) {
     const bar = element("i");
     bar.style.height = `${15 + Math.abs(Math.sin(i * .41) * Math.cos(i * .13)) * 115}px`;
