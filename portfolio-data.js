@@ -7,7 +7,7 @@ window.PORTFOLIO = {
     email: "mailto:ixsperax1338@gmail.com",
     soundcloud: "https://soundcloud.com/purpose-music-818276909",
     itch: "https://purposey.itch.io/",
-    discord: "purposey", // Add an actual profile or invite URL; the old file only linked to the homepage.
+    discord: "purposey", // Discord username, displayed as copyable text (not a URL).
     legacyDiscord: "https://discord.com/"
   },
   // ABOUT: edit these paragraphs in both languages.
@@ -35,6 +35,7 @@ window.PORTFOLIO = {
   ],
   text: {
     en: {
+      copyDiscord: "Copy username", discordCopied: "Copied!", discordCopyFailed: "Select and copy the username manually.",
       skip: "Skip to content", work: "Work", showreel: "Showreel", music: "Music", about: "About", contact: "Contact", menu: "Menu", close: "Close", navigation: "Main navigation", language: "Language", home: "Purpose Music — home",
       name: "Vyacheslav Sinitsyn", available: "Open for work & collaboration", composer: "Composer", soundDesigner: "Sound Designer", implementation: "Audio Implementation", heroDescription: "Music that sets the scene. Sound that makes it feel alive. I create audio for games and the worlds inside them.", viewProjects: "Explore projects", listen: "Listen to music", heroFoot: "Independent games. Original sound.", genres: "ELECTRONIC / AMBIENT / CINEMATIC",
       inFocus: "01 / IN FOCUS", showreelTitle: "Game Audio Showreel", showreelIntro: "A closer listen to music, sound and interaction.", comingSoon: "Showreel coming soon", reelNote: "In the meantime, explore the games and music below.", watchReel: "Watch the showreel", loadVideo: "Load video", videoError: "Video unavailable? Open the original video.",
@@ -45,6 +46,7 @@ window.PORTFOLIO = {
       pageTitle: "Vyacheslav Sinitsyn · Game Audio & Music", pageDescription: "Music, sound design and interactive audio for games. Explore the work of Vyacheslav Sinitsyn (Purpose Music). Open for freelance work and collaboration."
     },
     ru: {
+      copyDiscord: "Копировать ник", discordCopied: "Скопировано!", discordCopyFailed: "Выделите и скопируйте ник вручную.",
       skip: "Перейти к содержимому", work: "Проекты", showreel: "Шоурил", music: "Музыка", about: "Обо мне", contact: "Контакты", menu: "Меню", close: "Закрыть", navigation: "Основная навигация", language: "Язык", home: "Purpose Music — на главную",
       name: "Вячеслав Синицын", available: "Открыт к работе и сотрудничеству", composer: "Композитор", soundDesigner: "Саунд-дизайнер", implementation: "Интеграция аудио", heroDescription: "Музыка задаёт настроение. Звук оживляет мир. Я создаю аудио для игр и историй внутри них.", viewProjects: "Смотреть проекты", listen: "Слушать музыку", heroFoot: "Независимые игры. Оригинальный звук.", genres: "ЭЛЕКТРОНИКА / ЭМБИЕНТ / КИНОМУЗЫКА",
       inFocus: "01 / В ФОКУСЕ", showreelTitle: "Шоурил игрового аудио", showreelIntro: "Музыка, звук и взаимодействие — в одном видео.", comingSoon: "Шоурил скоро появится", reelNote: "А пока можно познакомиться с играми и музыкой ниже.", watchReel: "Смотреть шоурил", loadVideo: "Загрузить видео", videoError: "Видео недоступно? Открыть оригинал.",

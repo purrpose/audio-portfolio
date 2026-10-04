@@ -180,7 +180,44 @@
   document.querySelectorAll("[data-lang]").forEach(button => button.addEventListener("click", () => applyLanguage(button.dataset.lang, true)));
   document.querySelectorAll("[data-contact]").forEach(link => { link.href = data.contacts[link.dataset.contact]; });
   $(".email-link").textContent = data.contacts.email.replace(/^mailto:/, "");
-  if (data.contacts.discord) { $("#discord-link").href = data.contacts.discord; $("#discord-link").hidden = false; }
+  if (data.contacts.discord?.trim()) {
+    const username = data.contacts.discord.trim();
+    const contact = $("#discord-contact");
+    const status = $("#discord-status");
+    const button = $("#discord-copy");
+    $("#discord-username").textContent = username;
+    contact.hidden = false;
+    let resetTimer;
+    button.addEventListener("click", async () => {
+      clearTimeout(resetTimer);
+      button.disabled = true;
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(username);
+        copied = true;
+      } catch {
+        // Support local previews and browsers without Clipboard API access.
+        const field = element("textarea");
+        field.value = username;
+        field.style.cssText = "position:fixed;left:-9999px;top:0";
+        document.body.append(field);
+        field.select();
+        try { copied = document.execCommand("copy"); } catch { /* Show manual-copy instructions. */ }
+        field.remove();
+      } finally {
+        button.disabled = false;
+        button.focus({ preventScroll: true });
+      }
+      contact.classList.toggle("is-copied", copied);
+      status.dataset.i18n = copied ? "discordCopied" : "discordCopyFailed";
+      status.textContent = t(status.dataset.i18n);
+      resetTimer = setTimeout(() => {
+        status.textContent = "";
+        delete status.dataset.i18n;
+        contact.classList.remove("is-copied");
+      }, 4000);
+    });
+  }
   $("#year").textContent = new Date().getFullYear();
 
   // Interfering waves form a flowing ribbon. This is decorative, not audio data.

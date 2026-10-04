@@ -139,8 +139,20 @@ a:hover { color: var(--accent); }
 .contact-section p:not(.eyebrow) { color: #b5bcad; font-size: 14px; margin-top: 22px; }
 .contact-links { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; border-top: 1px solid #3d4237; margin-top: 35px; padding-top: 24px; }
 .email-link { font-size: 20px; letter-spacing: -.4px; overflow-wrap: anywhere; }
-.social-links { display: flex; gap: 25px; font-size: 12px; align-items: center; }
+.social-links { display: flex; flex-wrap: wrap; gap: 20px 25px; font-size: 12px; align-items: center; }
 .social-links a { padding: 8px 0; }
+.contact-links { align-items: center; }
+.discord-contact { max-width: 100%; }
+.discord-card { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px; padding: 12px 14px; border: 1px solid #505647; border-radius: 6px; background: #191c17; }
+.discord-identity { display: grid; gap: 2px; min-width: 0; }
+.discord-label { color: var(--muted); font: 9px/1.5 Consolas, monospace; text-transform: uppercase; letter-spacing: .14em; }
+.discord-username { color: var(--ink); font: 15px/1.5 Consolas, monospace; user-select: all; overflow-wrap: anywhere; }
+.discord-copy { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 10px; border: 1px solid #505647; border-radius: 4px; background: transparent; color: var(--accent); font-size: 11px; }
+.discord-copy:hover { border-color: var(--accent); background: #e8b58e0d; }
+.discord-copy svg { flex-shrink: 0; }
+.discord-contact.is-copied .discord-copy { color: #c3d4ac; border-color: #748362; }
+.discord-status { display: block; max-width: 290px; font-size: 11px; color: #c3d4ac; }
+.discord-status:not(:empty) { margin-top: 6px; }
 .footer { display: flex; justify-content: space-between; gap: 24px; color: var(--muted); font-size: 10px; padding-block: 25px; }
 .footer a { padding-inline: 5px; }
 .noscript { padding: 24px; text-align: center; color: var(--accent); }
