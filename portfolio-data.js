@@ -55,7 +55,7 @@ window.PORTFOLIO = {
       "id": "despair",
       "title": "Despair",
       "category": {
-        "en": "At / Atmosphere",
+        "en": "Horror / Atmosphere",
         "ru": "Ужас / Атмосфера"
       },
       "src": "assets/audio/sfx/despair (mastered).mp3"
