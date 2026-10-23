@@ -1,144 +1,353 @@
 (() => {
   "use strict";
   const data = window.PORTFOLIO;
-  const $ = (selector) => document.querySelector(selector);
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
   let language = "en";
-  try { if (localStorage.getItem("portfolio-language") === "ru") language = "ru"; } catch { /* Storage may be disabled. */ }
-  const t = (key) => data.text[language][key] ?? data.text.en[key] ?? key;
-  const element = (tag, className, text) => {
+  try { if (localStorage.getItem("portfolio-language") === "ru") language = "ru"; } catch { /* Optional storage. */ }
+  const t = key => data.text[language][key] ?? data.text.en[key] ?? key;
+  const localized = value => typeof value === "string" ? value : value?.[language] ?? value?.en ?? "";
+  const languageUpdates = [];
+  const el = (tag, className, text) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
     if (text !== undefined) node.textContent = text;
     return node;
   };
   const translated = (tag, className, key) => {
-    const node = element(tag, className, t(key));
+    const node = el(tag, className, t(key));
     node.dataset.i18n = key;
     return node;
   };
-  const externalLink = (url, className, text) => {
-    const link = element("a", className, text);
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    return link;
-  };
+  function link(url, className, label) {
+    const node = el("a", className, label);
+    node.href = url;
+    if (/^https?:/i.test(url)) { node.target = "_blank"; node.rel = "noopener noreferrer"; }
+    return node;
+  }
+  const time = seconds => Number.isFinite(seconds) ? `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}` : "—:——";
 
-  function renderProjects() {
-    const cards = data.projects.map((project, index) => {
-      const card = element("article", "project-card");
-      const art = project.url ? externalLink(project.url, "project-art") : element("div", "project-art fractured-cover");
+  // One media owner across local files, the reel and visible SoundCloud embeds.
+  // Removing an inactive embed also stops its audio without a third-party API.
+  const localPlayers = [];
+  let mediaOwner = null;
+  let externalPlayer = null;
+  function claimMedia(owner) {
+    mediaOwner = owner;
+    localPlayers.forEach(player => { if (player !== owner) player.pause(); });
+    if (externalPlayer && externalPlayer !== owner) {
+      const previous = externalPlayer;
+      externalPlayer = null;
+      previous.dispose();
+    }
+  }
+
+  function createAudioPlayer(item, index) {
+    const row = el("article", "sample");
+    row.dataset.sample = item.id || String(index);
+    const title = el("h3", "sample-title", item.title);
+    const category = el("p", "sample-category", localized(item.category));
+    const details = el("div", "sample-details");
+    details.append(title, category);
+    const toggle = el("button", "sample-toggle");
+    toggle.type = "button";
+    toggle.setAttribute("aria-pressed", "false");
+    const transport = el("div", "sample-transport");
+    const progress = el("input", "sample-progress");
+    progress.type = "range";
+    progress.min = "0"; progress.max = "0"; progress.step = "0.01"; progress.value = "0";
+    progress.disabled = true;
+    const clock = el("span", "sample-time", "0:00 / —:——");
+    clock.setAttribute("aria-hidden", "true");
+    const status = el("p", "sample-status");
+    status.setAttribute("role", "status");
+    transport.append(progress, clock);
+    row.append(details, toggle, transport, status);
+    // Empty slots stay visible without creating an audio element or a request.
+    if (!item.src?.trim()) {
+      row.classList.add("is-pending");
+      toggle.disabled = true;
+      clock.textContent = "—:——";
+      const refreshPending = () => {
+        toggle.textContent = t("samplePending");
+        toggle.setAttribute("aria-label", `${item.title}: ${t("samplePending")}`);
+        progress.setAttribute("aria-label", `${t("seek")}: ${item.title}`);
+        category.textContent = localized(item.category);
+      };
+      languageUpdates.push(refreshPending);
+      refreshPending();
+      return row;
+    }
+    const audio = el("audio");
+    audio.preload = "metadata";
+    audio.src = item.src;
+    audio.hidden = true;
+    row.append(audio);
+    let desired = false;
+    let failed = false;
+    let statusKey = "";
+    let request = 0;
+    let loadTimer;
+    const player = {
+      pause() {
+        desired = false;
+        request++;
+        clearTimeout(loadTimer);
+        audio.pause();
+        if (!failed) statusKey = "";
+        refresh();
+      }
+    };
+    localPlayers.push(player);
+    function refresh() {
+      const playing = !audio.paused && !audio.ended;
+      const key = playing || desired ? "pause" : failed ? "retry" : "play";
+      toggle.textContent = t(key);
+      toggle.setAttribute("aria-label", `${t(key)}: ${item.title}`);
+      toggle.setAttribute("aria-pressed", String(playing || desired));
+      row.classList.toggle("is-playing", playing);
+      row.classList.toggle("has-error", failed);
+      status.textContent = statusKey ? t(statusKey) : "";
+      category.textContent = localized(item.category);
+      const duration = audio.duration;
+      const current = audio.currentTime || 0;
+      const known = Number.isFinite(duration) && duration > 0 && !failed;
+      progress.disabled = !known;
+      progress.max = known ? String(duration) : "0";
+      progress.value = known ? String(current) : "0";
+      progress.style.setProperty("--progress", known ? `${current / duration * 100}%` : "0%");
+      progress.setAttribute("aria-label", `${t("seek")}: ${item.title}`);
+      progress.setAttribute("aria-valuetext", `${time(current)} ${t("of")} ${time(duration)}`);
+      clock.textContent = `${time(current)} / ${time(duration)}`;
+    }
+    function fail() {
+      desired = false;
+      failed = true;
+      request++;
+      clearTimeout(loadTimer);
+      audio.pause();
+      statusKey = "audioError";
+      refresh();
+    }
+    toggle.addEventListener("click", async () => {
+      if (desired || !audio.paused) { player.pause(); return; }
+      claimMedia(player);
+      desired = true;
+      const attempt = ++request;
+      if (failed) { failed = false; audio.load(); }
+      if (audio.ended) audio.currentTime = 0;
+      statusKey = "loading";
+      refresh();
+      loadTimer = setTimeout(() => { if (attempt === request && desired) fail(); }, 15000);
+      try {
+        await audio.play();
+        if (attempt !== request || mediaOwner !== player || !desired) return;
+        clearTimeout(loadTimer);
+        statusKey = "";
+        refresh();
+      } catch (error) {
+        if (attempt === request && error.name !== "AbortError") fail();
+      }
+    });
+    audio.addEventListener("play", () => {
+      if (mediaOwner !== player || !desired) { audio.pause(); return; }
+      refresh();
+      $("#audio-announcement").textContent = `${t("playing")}: ${item.title}`;
+    });
+    audio.addEventListener("playing", () => { clearTimeout(loadTimer); statusKey = ""; refresh(); });
+    audio.addEventListener("pause", refresh);
+    audio.addEventListener("ended", () => {
+      desired = false;
+      statusKey = "";
+      clearTimeout(loadTimer);
+      refresh();
+      $("#audio-announcement").textContent = `${t("finished")}: ${item.title}`;
+    });
+    audio.addEventListener("error", fail);
+    audio.addEventListener("loadedmetadata", refresh);
+    audio.addEventListener("durationchange", refresh);
+    audio.addEventListener("timeupdate", refresh);
+    progress.addEventListener("input", () => { if (!progress.disabled) { audio.currentTime = Number(progress.value); refresh(); } });
+    languageUpdates.push(refresh);
+    refresh();
+    return row;
+  }
+
+  function setupSamples() {
+    const samples = data.sfx || [];
+    $("#samples-empty").hidden = samples.length > 0;
+    $("#samples-pending-note").hidden = !samples.some(item => !item.src?.trim());
+    $("#samples").append(...samples.map((item, index) => createAudioPlayer(item, index)));
+  }
+
+  function setupProjects() {
+    data.projects.forEach(project => {
+      const article = el("article", "project");
+      article.id = `project-${project.id}`;
+      if (project.color) article.style.setProperty("--project-bg", project.color);
+      const art = project.url ? link(project.url, "project-art") : el("div", "project-art");
       if (project.image) {
-        const img = element("img", project.image.includes("original-sin") ? "" : "pixel-art");
+        const img = el("img", project.pixelArt ? "pixel-art" : "");
         img.src = project.image;
-        img.alt = `${t("projectArt")} ${project.title}`;
-        img.loading = "lazy";
-        img.decoding = "async";
-        img.width = project.image.includes("original-sin") ? 1180 : 315;
-        img.height = project.image.includes("original-sin") ? 562 : 250;
+        img.width = project.width || 315; img.height = project.height || 250;
+        img.loading = "lazy"; img.decoding = "async";
+        languageUpdates.push(() => { img.alt = `${t("projectArt")} ${project.title}`; });
         art.append(img);
       } else {
-        art.classList.add("fractured-cover");
-        const title = element("strong");
-        project.title.split(" ").forEach(word => title.append(element("span", "", word)));
-        art.append(title);
-        if (project.url) art.setAttribute("aria-label", project.title);
-        else art.setAttribute("aria-hidden", "true");
+        art.classList.add("typographic-cover");
+        art.append(el("strong", "", project.title));
+        art.setAttribute("aria-label", project.title);
       }
-      art.append(element("span", "project-number", String(index + 1).padStart(2, "0")));
-      const bottom = element("div", "project-bottom");
-      bottom.append(element("span", "project-role", t(project.role)));
+      const meta = el("div", "project-meta");
+      meta.append(translated("span", "", project.type));
+      const info = el("div", "project-info");
+      info.append(el("h3", "", project.title), translated("p", "project-role", project.role));
+      if (project.description) {
+        const description = el("p", "project-description");
+        languageUpdates.push(() => { description.textContent = localized(project.description); });
+        info.append(description);
+      }
+      const actions = el("div", "project-actions");
       if (project.url) {
-        const label = project.platform === "Steam" ? t("steam") : t("play");
-        const link = externalLink(project.url, "project-button", `${label} ↗`);
-        link.setAttribute("aria-label", `${label}: ${project.title}`);
-        bottom.append(link);
-      } else bottom.append(element("span", "project-pending", t("inDevelopment")));
-      card.append(art, element("p", "project-meta", t(project.type)), element("h3", "", project.title), element("p", "project-description", project.description[language]), bottom);
-      return card;
+        const action = link(project.url, "");
+        const key = project.platform === "Steam" ? "steam" : "playGame";
+        action.append(translated("span", "", key));
+        languageUpdates.push(() => action.setAttribute("aria-label", `${t(key)}: ${project.title}`));
+        actions.append(action);
+      }
+      if (project.listen && data.tracks.some(track => track.id === project.listen)) {
+        const action = link(`#track-${project.listen}`, "");
+        action.append(translated("span", "", "listen"));
+        actions.append(action);
+      }
+      info.append(meta, actions);
+      article.append(art, info);
+      $("#projects").append(article);
     });
-    $("#projects").replaceChildren(...cards);
-    $("#biography").replaceChildren(...data.about[language].map(copy => element("p", "", copy)));
   }
 
   function setupTracks() {
-    const tracks = data.tracks.length ? data.tracks : [{ url: data.contacts.soundcloud }];
-    tracks.forEach((track, index) => {
-      const row = element("article", "track");
-      const heading = element("div", "track-heading");
-      const title = element("h3", "track-title");
-      title.append(element("span", "track-index", String(index + 1).padStart(2, "0")));
-      title.append(track.title ? element("span", "", track.title) : translated("span", "", "profileTracks"));
-      const load = translated("button", "load-player", "loadPlayer");
-      load.type = "button";
-      heading.append(title, load);
-      const note = translated("p", "track-note", "playerNote");
-      const link = externalLink(track.url, "track-link");
-      link.append(translated("span", "", "openSoundcloud"), document.createTextNode(" ↗"));
-      row.append(heading, note, link);
-      load.addEventListener("click", () => {
-        const frame = element("iframe", "player-frame");
-        const params = new URLSearchParams({url: track.url, color: "#bc7845", auto_play: "false", hide_related: "true", show_comments: "false", show_user: "true", show_reposts: "false", show_artwork: "false", visual: "false", single_active: "true"});
+    data.tracks.forEach((track, index) => {
+      if (track.src) {
+        const row = createAudioPlayer(track, index);
+        row.id = `track-${track.id}`;
+        if (track.url) row.append(link(track.url, "track-link", "SoundCloud"));
+        $("#tracks").append(row);
+        return;
+      }
+      if (!track.url) return;
+      const row = el("article", "track");
+      row.id = `track-${track.id}`;
+      const heading = el("div", "track-heading");
+      const category = el("p", "track-category");
+      const title = el("h3", "track-title", track.title);
+      languageUpdates.push(() => { category.textContent = localized(track.category); });
+      const button = translated("button", "load-player", "loadPlayer");
+      button.type = "button";
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-controls", `player-${track.id}`);
+      heading.append(title, category, el("span", "track-duration", time(track.duration)), button);
+      const mount = el("div", "player-mount");
+      mount.id = `player-${track.id}`;
+      const fallback = translated("p", "player-fallback", "playerFallback");
+      fallback.hidden = true;
+      const original = link(track.url, "track-link");
+      original.append(translated("span", "", "openSoundcloud"));
+      row.append(heading, mount, fallback, original);
+      let frame;
+      const owner = {
+        dispose() {
+          mount.replaceChildren();
+          frame = null;
+          button.dataset.i18n = "loadPlayer";
+          button.textContent = t("loadPlayer");
+          button.setAttribute("aria-expanded", "false");
+          fallback.hidden = true;
+          updateLabel();
+        }
+      };
+      const updateLabel = () => {
+        button.setAttribute("aria-label", `${t(frame ? "closePlayer" : "loadPlayer")}: ${track.title}`);
+        if (frame) frame.title = `${t("soundcloudPlayer")}: ${track.title}`;
+      };
+      languageUpdates.push(updateLabel);
+      button.addEventListener("click", () => {
+        if (frame) {
+          owner.dispose(); externalPlayer = null; mediaOwner = null;
+          return;
+        }
+        claimMedia(owner);
+        externalPlayer = owner;
+        frame = el("iframe", "player-frame");
+        const params = new URLSearchParams({ url: track.url, color: "#647022", auto_play: "false", hide_related: "true", show_comments: "false", show_user: "true", show_reposts: "false", show_artwork: "false", visual: "false", single_active: "true" });
         frame.src = `https://w.soundcloud.com/player/?${params}`;
-        frame.title = `${t("soundcloudPlayer")}${track.title ? `: ${track.title}` : ""}`;
-        frame.dataset.playerTitle = track.title || "";
         frame.allow = "autoplay";
-        row.insertBefore(frame, link);
-        note.dataset.i18n = "playerFallback";
-        note.textContent = t("playerFallback");
-        // Keep the official controls visible: play, pause, seek and track selection.
-        // Loading the frame does not start playback. No API keys or hidden audio player.
-        load.remove();
-        frame.addEventListener("load", () => frame.focus(), { once: true });
-      }, { once: true });
+        frame.referrerPolicy = "strict-origin-when-cross-origin";
+        button.dataset.i18n = "closePlayer";
+        button.textContent = t("closePlayer");
+        button.setAttribute("aria-expanded", "true");
+        fallback.hidden = false;
+        updateLabel();
+        mount.append(frame);
+      });
       $("#tracks").append(row);
     });
   }
 
   function setupShowreel() {
-    if (!data.showreelUrl) return;
+    const stage = $("#showreel-content");
     let url;
-    try { url = new URL(data.showreelUrl); } catch { return; }
-    if (!["https:", "http:"].includes(url.protocol)) return;
-    const host = url.hostname.replace(/^www\./, "");
-    let videoId = "";
-    if (host === "youtu.be") videoId = url.pathname.slice(1);
-    if (["youtube.com", "m.youtube.com", "youtube-nocookie.com"].includes(host)) {
-      videoId = url.searchParams.get("v") || url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)/)?.[1] || "";
+    try { if (data.showreelUrl?.trim()) url = new URL(data.showreelUrl, document.baseURI); } catch { /* Missing or invalid reel. */ }
+    if (!url || !["https:", "http:"].includes(url.protocol)) {
+      stage.append(translated("p", "reel-caption", "reelUnavailable"));
+      return;
     }
-    const youtube = /^[\w-]{11}$/.test(videoId);
+    const duration = $("#reel-duration");
+    duration.hidden = !Number.isFinite(data.showreelDuration);
+    if (!duration.hidden) duration.textContent = time(data.showreelDuration);
+    const host = url.hostname.replace(/^www\./, "");
+    let id = host === "youtu.be" ? url.pathname.slice(1) : "";
+    if (["youtube.com", "m.youtube.com", "youtube-nocookie.com"].includes(host)) id = url.searchParams.get("v") || url.pathname.match(/^\/(?:embed|shorts)\/([^/]+)/)?.[1] || "";
+    const youtube = /^[\w-]{11}$/.test(id);
     const direct = /\.(mp4|webm)$/i.test(url.pathname);
-    const panel = $("#showreel-content");
-    const content = element("div", "reel-label");
-    const button = youtube || direct ? translated("button", "button primary", "loadVideo") : externalLink(url.href, "button primary");
-    if (button.tagName === "A") button.append(translated("span", "", "watchReel"));
-    else button.type = "button";
-    content.append(button);
-    panel.replaceChildren(content);
-    const fallback = externalLink(url.href, "reel-link");
-    fallback.append(translated("span", "", "videoError"));
-    panel.after(fallback);
-    if (!(youtube || direct)) return;
-    button.addEventListener("click", () => {
-      const media = element(youtube ? "iframe" : "video");
-      if (youtube) {
-        // YouTube requires an HTTP Referer; preview over HTTP(S), not file://.
-        media.referrerPolicy = "strict-origin-when-cross-origin";
-        media.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0`;
-        media.title = t("showreelTitle");
-        media.allow = "fullscreen; picture-in-picture; encrypted-media";
-        media.allowFullscreen = true;
-      } else {
-        media.src = url.href;
-        media.controls = true;
-        media.preload = "metadata";
-        media.playsInline = true;
-        media.setAttribute("aria-label", t("showreelTitle"));
-      }
-      panel.classList.add("has-video");
-      panel.replaceChildren(media);
-      media.focus();
-    }, { once: true });
+    const owner = { dispose: reset };
+    let media;
+    function reset() {
+      media = null;
+      const button = youtube || direct ? el("button", "reel-placeholder") : link(url.href, "reel-placeholder");
+      if (button.tagName === "BUTTON") button.type = "button";
+      const slate = el("span", "reel-slate");
+      slate.append(el("span", "", data.showreelLabel || "SHOWREEL"), el("span", "", "[ VIDEO ]"));
+      const action = el("span", "reel-play");
+      action.append(translated("span", "", "watchReel"));
+      button.append(slate, translated("span", "reel-poster-title", "reelPoster"), action);
+      stage.replaceChildren(button);
+      if (youtube || direct) button.addEventListener("click", () => {
+        claimMedia(owner);
+        externalPlayer = owner;
+        media = el(youtube ? "iframe" : "video");
+        if (youtube) {
+          media.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+          media.allow = "autoplay; fullscreen; picture-in-picture; encrypted-media";
+          media.allowFullscreen = true;
+          media.referrerPolicy = "strict-origin-when-cross-origin";
+        } else {
+          media.src = url.href;
+          media.controls = true;
+          media.preload = "metadata";
+          media.playsInline = true;
+        }
+        media.title = t("reelTitle");
+        media.setAttribute("aria-label", t("reelTitle"));
+        stage.replaceChildren(media);
+        media.focus();
+        if (direct) media.play().catch(() => { /* Native play control remains available. */ });
+      });
+    }
+    languageUpdates.push(() => {
+      if (media) { media.title = t("reelTitle"); media.setAttribute("aria-label", t("reelTitle")); }
+    });
+    reset();
   }
 
   const menu = $(".menu-button");
@@ -155,146 +364,56 @@
     if (event.key === "Escape" && menu.getAttribute("aria-expanded") === "true") { setMenu(false); menu.focus(); }
   });
   document.addEventListener("click", event => { if (!event.target.closest(".header")) setMenu(false); });
-  matchMedia("(max-width: 650px)").addEventListener("change", () => setMenu(false));
+  document.addEventListener("focusin", event => { if (!event.target.closest(".header")) setMenu(false); });
+  matchMedia("(max-width: 900px)").addEventListener("change", () => setMenu(false));
 
   function applyLanguage(next, persist = false) {
     language = next;
     document.documentElement.lang = language;
     document.title = t("pageTitle");
-    document.querySelectorAll("[data-i18n]").forEach(node => { node.textContent = t(node.dataset.i18n); });
-    document.querySelectorAll("[data-lang]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.lang === language)));
-    document.querySelectorAll('meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]').forEach(meta => { meta.content = t("pageDescription"); });
-    document.querySelectorAll('meta[property="og:title"], meta[name="twitter:title"]').forEach(meta => { meta.content = t("pageTitle"); });
+    $$("[data-i18n]").forEach(node => { node.textContent = t(node.dataset.i18n); });
+    $$("[data-lang]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.lang === language)));
+    $$('meta[name="description"], meta[property="og:description"]').forEach(meta => { meta.content = t("pageDescription"); });
+    $('meta[property="og:title"]').content = t("pageTitle");
     $('meta[property="og:locale"]').content = language === "ru" ? "ru_RU" : "en_US";
     nav.setAttribute("aria-label", t("navigation"));
     $(".language").setAttribute("aria-label", t("language"));
     $(".brand").setAttribute("aria-label", t("home"));
-    $(".contact-arrow").setAttribute("aria-label", t("emailLabel"));
     $("#portrait").alt = t("portraitAlt");
-    document.querySelectorAll(".player-frame").forEach(frame => { frame.title = `${t("soundcloudPlayer")}${frame.dataset.playerTitle ? `: ${frame.dataset.playerTitle}` : ""}`; });
-    const video = $("#showreel-content iframe, #showreel-content video");
-    if (video) { video.title = t("showreelTitle"); video.setAttribute("aria-label", t("showreelTitle")); }
-    renderProjects();
+    $("#biography").replaceChildren(...data.about[language].map(copy => el("p", "", copy)));
+    languageUpdates.forEach(update => update());
     if (persist) { try { localStorage.setItem("portfolio-language", language); } catch { /* Still works for this visit. */ } }
   }
-  document.querySelectorAll("[data-lang]").forEach(button => button.addEventListener("click", () => applyLanguage(button.dataset.lang, true)));
-  document.querySelectorAll("[data-contact]").forEach(link => { link.href = data.contacts[link.dataset.contact]; });
-  $(".email-link").textContent = data.contacts.email.replace(/^mailto:/, "");
-  if (data.contacts.discord?.trim()) {
-    const username = data.contacts.discord.trim();
-    const contact = $("#discord-contact");
-    const status = $("#discord-status");
-    const button = $("#discord-copy");
+  $$("[data-lang]").forEach(button => button.addEventListener("click", () => applyLanguage(button.dataset.lang, true)));
+  $$("[data-contact]").forEach(node => { node.href = data.contacts[node.dataset.contact]; });
+  $$('[data-contact="email"]').forEach(node => { node.textContent = data.contacts.email.replace(/^mailto:/, ""); });
+  const username = data.contacts.discord?.trim();
+  $("#discord-contact").hidden = !username;
+  if (username) {
     $("#discord-username").textContent = username;
-    contact.hidden = false;
+    const button = $("#discord-copy");
+    const status = $("#discord-status");
     let resetTimer;
     button.addEventListener("click", async () => {
       clearTimeout(resetTimer);
-      button.disabled = true;
       let copied = false;
-      try {
-        await navigator.clipboard.writeText(username);
-        copied = true;
-      } catch {
-        // Support local previews and browsers without Clipboard API access.
-        const field = element("textarea");
+      try { await navigator.clipboard.writeText(username); copied = true; } catch {
+        const field = el("textarea", "sr-only");
         field.value = username;
-        field.style.cssText = "position:fixed;left:-9999px;top:0";
         document.body.append(field);
         field.select();
-        try { copied = document.execCommand("copy"); } catch { /* Show manual-copy instructions. */ }
+        try { copied = document.execCommand("copy"); } catch { /* Manual copy stays possible. */ }
         field.remove();
-      } finally {
-        button.disabled = false;
         button.focus({ preventScroll: true });
       }
-      contact.classList.toggle("is-copied", copied);
       status.dataset.i18n = copied ? "discordCopied" : "discordCopyFailed";
       status.textContent = t(status.dataset.i18n);
-      resetTimer = setTimeout(() => {
-        status.textContent = "";
-        delete status.dataset.i18n;
-        contact.classList.remove("is-copied");
-      }, 4000);
+      resetTimer = setTimeout(() => { status.textContent = ""; delete status.dataset.i18n; }, 4000);
     });
   }
   $("#year").textContent = new Date().getFullYear();
-
-  // Interfering waves form a flowing ribbon. This is decorative, not audio data.
-  function setupSignalArt() {
-    const lines = $("#signal-lines");
-    const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
-    const paths = Array.from({ length: 32 }, () => {
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      // Keep SVG paint on the element so the ribbon never falls back to black fill.
-      path.setAttribute("fill", "none");
-      path.setAttribute("stroke", "url(#signal-color) #dfa778");
-      path.setAttribute("stroke-width", ".85");
-      path.setAttribute("opacity", ".75");
-      path.setAttribute("vector-effect", "non-scaling-stroke");
-      lines.append(path);
-      return path;
-    });
-    const samples = Array.from({ length: 101 }, (_, index) => {
-      const u = index / 100;
-      return { x: 20 + u * 400, phase: u * Math.PI * 2, envelope: Math.sin(u * Math.PI) ** .9 };
-    });
-    function draw(time) {
-      paths.forEach((path, row) => {
-        const depth = row / (paths.length - 1) - .5;
-        const points = samples.map(({ x, phase, envelope }, index) => {
-          const swell = Math.sin(phase - time * .65 + depth * 1.8) * 47;
-          const ripple = Math.sin(phase * 2 + time * .4 - depth * 1.3) * 21;
-          const drift = Math.sin(phase * .5 - time * .3) * 9;
-          const spread = depth * 88 * (.25 + .75 * envelope);
-          // Max displacement is 121: all phases fit the 280-high viewBox with padding.
-          const y = 140 + spread + (swell + ripple + drift) * envelope;
-          return `${index ? "L" : "M"}${x},${y.toFixed(2)}`;
-        });
-        path.setAttribute("d", points.join(" "));
-      });
-    }
-    let frame = null;
-    let visible = false;
-    let lastPaint = null;
-    let elapsed = 0;
-    function animate(now) {
-      if (lastPaint === null) lastPaint = now;
-      const delta = now - lastPaint;
-      // Cap drawing at 30 fps and avoid jumps after backgrounding the page.
-      if (delta >= 1000 / 30) {
-        elapsed += Math.min(delta, 100) / 1000;
-        draw(elapsed);
-        lastPaint = now;
-      }
-      frame = requestAnimationFrame(animate);
-    }
-    function updateMotion() {
-      const active = visible && !document.hidden && !motionPreference.matches;
-      if (active && frame === null) {
-        lastPaint = null;
-        frame = requestAnimationFrame(animate);
-      } else if (!active && frame !== null) {
-        cancelAnimationFrame(frame);
-        frame = null;
-      }
-      if (motionPreference.matches) draw(0);
-    }
-    draw(0);
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      updateMotion();
-    });
-    observer.observe($(".signal-art"));
-    document.addEventListener("visibilitychange", updateMotion);
-    motionPreference.addEventListener("change", updateMotion);
-  }
-  setupSignalArt();
-  for (let i = 0; i < 115; i++) {
-    const bar = element("i");
-    bar.style.height = `${15 + Math.abs(Math.sin(i * .41) * Math.cos(i * .13)) * 115}px`;
-    $(".reel-wave").append(bar);
-  }
+  setupSamples();
+  setupProjects();
   setupTracks();
   setupShowreel();
   applyLanguage(language);

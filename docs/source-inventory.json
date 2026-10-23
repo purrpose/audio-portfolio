@@ -1,0 +1,97 @@
+{
+  "showreelUrl": "https://youtu.be/1CR6B8WtWFo",
+  "contacts": {
+    "email": "mailto:ixsperax1338@gmail.com",
+    "soundcloud": "https://soundcloud.com/purpose-music-818276909",
+    "itch": "https://purposey.itch.io/",
+    "discord": "purposey",
+    "legacyDiscord": "https://discord.com/"
+  },
+  "projects": [
+    {
+      "id": "cyber-maiden",
+      "title": "The Cyber Maiden",
+      "role": "composerSound",
+      "url": "https://eclipsense.itch.io/the-cyber-maiden",
+      "image": "assets/images/cyber-maiden.png"
+    },
+    {
+      "id": "anothers-destiny",
+      "title": "Another's Destiny",
+      "role": "composerSound",
+      "url": "https://eclipsense.itch.io/anothers-destiny",
+      "image": "assets/images/another's-destiny.png"
+    },
+    {
+      "id": "steel-sense",
+      "title": "Steel Sense",
+      "role": "composerSound",
+      "url": "https://eclipsense.itch.io/steel-sense",
+      "image": "assets/images/steel-sense.png"
+    },
+    {
+      "id": "global-flood",
+      "title": "Global Flood",
+      "role": "composerSound",
+      "url": "https://eclipsense.itch.io/global-flood",
+      "image": "assets/images/global-flood.png"
+    },
+    {
+      "id": "original-sin",
+      "title": "Original Sin",
+      "role": "composerSound",
+      "url": "https://platform.sibgamejam.com/games/tidesofjuice/originalsin",
+      "image": "assets/images/original-sin.png"
+    },
+    {
+      "id": "fractured-red",
+      "title": "FRACTURED RED",
+      "role": "composer",
+      "url": "https://store.steampowered.com/app/3870260",
+      "image": "assets/images/photo_2026-10-14_20-34-37.jpg"
+    }
+  ],
+  "tracks": [
+    {
+      "id": "original-sin-boss",
+      "title": "Original Sin Boss Theme",
+      "url": "https://soundcloud.com/purpose-music-818276909/original-sin-boss-theme"
+    },
+    {
+      "id": "cyber-boss",
+      "title": "The Cyber Maiden Boss Theme",
+      "url": "https://soundcloud.com/purpose-music-818276909/the-cyber-maiden-boss-theme"
+    },
+    {
+      "id": "cyber-combat",
+      "title": "The Cyber Maiden Combat Theme",
+      "url": "https://soundcloud.com/purpose-music-818276909/the-cyber-maiden-combat-theme"
+    }
+  ],
+  "images": [
+    {
+      "file": "assets/images/another's-destiny.png",
+      "sha256": "4954f12696a8d8436d431783ca3c280eb97df45a59cad29cf31ace78536af6be"
+    },
+    {
+      "file": "assets/images/cyber-maiden.png",
+      "sha256": "9abde7abb9a59b2b44586cc4a25cce11a6314f43acd7e382ac9a339cc3302e8f"
+    },
+    {
+      "file": "assets/images/global-flood.png",
+      "sha256": "3c89c3001c53a597b652bbd2f9f03a1885802b0f6dc28bda676e4a4484a4cede"
+    },
+    {
+      "file": "assets/images/original-sin.png",
+      "sha256": "02966a320511f8c310a04985eebc9dfc7a8d0dc8d4b3e2a310b648d20d2a9a06"
+    },
+    {
+      "file": "assets/images/steel-sense.png",
+      "sha256": "03d76e08935bceab17d3c9afb31b60ce1228df4a6bb62b670f0c9e190ff13f86"
+    },
+    {
+      "file": "SnPwhEOGqGgmnHbQnVc5QeldTbpKOXacxJZdpJtBGOdw2GzaITEuMeeuamEk_qnkr8z3vWX8vE2CydNFjJalTJc6.jpg",
+      "sha256": "09ddb4f7b4cf0f037ddce51f359f1ae8cf5715927477a97fbcc49e4d13716143"
+    }
+  ]
+}
