@@ -76,8 +76,8 @@ window.PORTFOLIO = {
       "type": "jam",
       "listen": "cyber-combat",
       "description": {
-        "en": "Combat and boss music, plus game sound effects.",
-        "ru": "Музыка для боя и босса, а также игровые звуковые эффекты."
+        "en": "A pixel-art cyberpunk shooter inspired by a Brothers Grimm fairy tale.",
+        "ru": "Пиксельный киберпанк-шутер по мотивам сказки братьев Гримм."
       }
     },
     {
@@ -93,8 +93,8 @@ window.PORTFOLIO = {
       "role": "composerSound",
       "type": "jam",
       "description": {
-        "en": "Original music and sound design for the game.",
-        "ru": "Оригинальная музыка и саунд-дизайн игры."
+        "en": "A pixel-art fantasy adventure about a bard, a knight and a story of heroism.",
+        "ru": "Пиксельное фэнтези-приключение о барде, рыцаре и героизме."
       }
     },
     {
@@ -109,8 +109,8 @@ window.PORTFOLIO = {
       "role": "composerSound",
       "type": "jam",
       "description": {
-        "en": "Music and in-game sound effects.",
-        "ru": "Музыка и игровые звуковые эффекты."
+        "en": "A tense sword-fighting action game where you face enemies in darkness.",
+        "ru": "Напряжённый экшен с боями на мечах, где врагов приходится встречать во тьме."
       }
     },
     {
@@ -126,8 +126,8 @@ window.PORTFOLIO = {
       "role": "composerSound",
       "type": "jam",
       "description": {
-        "en": "Original music and game sound design.",
-        "ru": "Оригинальная музыка и игровой саунд-дизайн."
+        "en": "An atmospheric pixel-art adventure into the eerie depths of an alien ocean.",
+        "ru": "Атмосферное пиксельное приключение в пугающих глубинах чужого океана."
       }
     },
     {
@@ -143,8 +143,8 @@ window.PORTFOLIO = {
       "type": "jam",
       "listen": "original-sin-boss",
       "description": {
-        "en": "Original music, including the boss theme, and sound design.",
-        "ru": "Оригинальная музыка, включая тему босса, и саунд-дизайн."
+        "en": "A dark arena shooter about a hunter, living weapons and demons.",
+        "ru": "Мрачный аренный шутер об охотнике, живом оружии и демонах."
       }
     },
     {
@@ -156,8 +156,8 @@ window.PORTFOLIO = {
       "role": "composer",
       "type": "inDevelopment",
       "description": {
-        "en": "Music for a visual novel in development. The public demo does not include my soundtrack yet.",
-        "ru": "Музыка для визуальной новеллы в разработке. В публичной демоверсии моего саундтрека пока нет."
+        "en": "A sci-fi visual novel about an isolated Mars expedition and a mysterious rift.",
+        "ru": "Научно-фантастическая визуальная новелла об отрезанной от Земли экспедиции и тайне Марса."
       }
     }
   ],
