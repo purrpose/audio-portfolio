@@ -55,9 +55,9 @@ node docs/serve-preview.cjs
 
 Для **Panopticon Boss Theme** ссылка SoundCloud указана в `url` объекта с `"id": "panopticon-boss"`. Трек расположен вторым, `duration: 98` задаёт длительность 1:38.
 
-Для **Panopticum Checkpoint Theme** ссылка SoundCloud указана в `url` объекта с `"id": "panopticum-checkpoint"`. Трек расположен третьим, после Panopticon Boss Theme, `duration: 74` задаёт длительность 1:14. Чтобы заменить любой из этих треков, измените его `url`; при пустом `url` запись скрыта. Если длительность нового трека неизвестна, укажите `duration: null`.
+Для **Panopticon Checkpoint Theme** ссылка SoundCloud указана в `url` объекта с `"id": "panopticon-checkpoint"`. Трек расположен третьим, после Panopticon Boss Theme, `duration: 74` задаёт длительность 1:14. Чтобы заменить любой из этих треков, измените его `url`; при пустом `url` запись скрыта. Если длительность нового трека неизвестна, укажите `duration: null`.
 
-Порядок записей: The Cyber Maiden Boss Theme → Panopticon Boss Theme → Panopticum Checkpoint Theme → Original Sin Boss Theme → The Cyber Maiden Combat Theme → Another's Destiny Cutscene Theme.
+Порядок записей: The Cyber Maiden Boss Theme → Panopticon Boss Theme → Panopticon Checkpoint Theme → Original Sin Boss Theme → The Cyber Maiden Combat Theme → Another's Destiny Cutscene Theme.
 
 ## Добавить SFX
 

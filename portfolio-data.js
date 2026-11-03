@@ -182,8 +182,8 @@ window.PORTFOLIO = {
       "url": "https://soundcloud.com/purpose-music-818276909/panopticon-boss-theme"
     },
     {
-      "id": "panopticum-checkpoint",
-      "title": "Panopticum Checkpoint Theme",
+      "id": "panopticon-checkpoint",
+      "title": "Panopticon Checkpoint Theme",
       "duration": 74,
       "category": {
         "en": "PANOPTICON / CHECKPOINT / ORCHESTRAL",
