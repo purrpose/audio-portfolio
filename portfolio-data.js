@@ -114,20 +114,19 @@ window.PORTFOLIO = {
       }
     },
     {
-      "id": "global-flood",
-      "title": "Global Flood",
-      "image": "assets/images/global-flood.png",
-      "width": 315,
-      "height": 250,
-      "pixelArt": true,
-      "color": "#072a3d",
-      "url": "https://eclipsense.itch.io/global-flood",
-      "platform": "itch.io",
+      "id": "panopticon",
+      "title": "Panopticon",
+      "image": "assets/images/panopticon.png",
+      "width": 1511,
+      "height": 1430,
+      "color": "#201e2c",
+      "url": "https://naspeh.tech/games/tidesofjuice/panopticon",
+      "platform": "naspeh.tech",
       "role": "composerSound",
       "type": "jam",
       "description": {
-        "en": "An atmospheric pixel-art adventure into the eerie depths of an alien ocean.",
-        "ru": "Атмосферное пиксельное приключение в пугающих глубинах чужого океана."
+        "en": "A medieval souls-like with orchestral music.",
+        "ru": "Средневековый соулс-лайк с оркестровой музыкой."
       }
     },
     {
@@ -167,38 +166,58 @@ window.PORTFOLIO = {
       "title": "The Cyber Maiden Boss Theme",
       "duration": 135.465,
       "category": {
-        "en": "THE CYBER MAIDEN / BOSS THEME",
-        "ru": "THE CYBER MAIDEN / ТЕМА БОССА"
+        "en": "THE CYBER MAIDEN / BOSS THEME / DUBSTEP",
+        "ru": "THE CYBER MAIDEN / ТЕМА БОССА / ДАБСТЕП"
       },
       "url": "https://soundcloud.com/purpose-music-818276909/the-cyber-maiden-boss-theme"
     },
     {
-      "id": "cyber-combat",
-      "title": "The Cyber Maiden Combat Theme",
-      "duration": 104.692,
+      "id": "panopticon-boss",
+      "title": "Panopticon Boss Theme",
+      "duration": 98,
       "category": {
-        "en": "THE CYBER MAIDEN / COMBAT",
-        "ru": "THE CYBER MAIDEN / БОЙ"
+        "en": "PANOPTICON / BOSS THEME / ORCHESTRAL",
+        "ru": "PANOPTICON / ТЕМА БОССА / ОРКЕСТРОВАЯ МУЗЫКА"
       },
-      "url": "https://soundcloud.com/purpose-music-818276909/the-cyber-maiden-combat-theme"
+      "url": "https://soundcloud.com/purpose-music-818276909/panopticon-boss-theme"
+    },
+    {
+      "id": "panopticum-checkpoint",
+      "title": "Panopticum Checkpoint Theme",
+      "duration": 74,
+      "category": {
+        "en": "PANOPTICON / CHECKPOINT / ORCHESTRAL",
+        "ru": "PANOPTICON / КОНТРОЛЬНАЯ ТОЧКА / ОРКЕСТРОВАЯ МУЗЫКА"
+      },
+      "url": "https://soundcloud.com/purpose-music-818276909/panopticon-checkpoint-theme"
     },
     {
       "id": "original-sin-boss",
       "title": "Original Sin Boss Theme",
       "duration": 191.001,
       "category": {
-        "en": "ORIGINAL SIN / BOSS THEME",
-        "ru": "ORIGINAL SIN / ТЕМА БОССА"
+        "en": "ORIGINAL SIN / BOSS THEME / METAL",
+        "ru": "ORIGINAL SIN / ТЕМА БОССА / МЕТАЛ"
       },
       "url": "https://soundcloud.com/purpose-music-818276909/original-sin-boss-theme"
+    },
+    {
+      "id": "cyber-combat",
+      "title": "The Cyber Maiden Combat Theme",
+      "duration": 104.692,
+      "category": {
+        "en": "THE CYBER MAIDEN / COMBAT / ELECTRONIC",
+        "ru": "THE CYBER MAIDEN / БОЙ / ЭЛЕКТРОННАЯ МУЗЫКА"
+      },
+      "url": "https://soundcloud.com/purpose-music-818276909/the-cyber-maiden-combat-theme"
     },
     {
       "id": "anothers-destiny-cutscene",
       "title": "Another's Destiny Cutscene Theme",
       "duration": 41.241,
       "category": {
-        "en": "ANOTHER'S DESTINY / CUTSCENE",
-        "ru": "ANOTHER'S DESTINY / КАТСЦЕНА"
+        "en": "ANOTHER'S DESTINY / CUTSCENE / AMBIENT",
+        "ru": "ANOTHER'S DESTINY / КАТСЦЕНА / ЭМБИЕНТ"
       },
       "url": "https://soundcloud.com/purpose-music-818276909/anothers-destiny-cutscene-ost"
     }

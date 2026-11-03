@@ -32,7 +32,7 @@ node docs/serve-preview.cjs
 | Локальный шоурил | `assets/video/showreel.mp4` или `assets/video/showreel.webm` | `showreelUrl` |
 | Обложка новой игры | `assets/images/my-new-game.png` | `projects[].image` |
 
-В `assets/audio/sfx/` добавлены пять реальных эффектов WAV/MP3. Четыре музыкальных трека и шоурил работают по существующим внешним ссылкам. Пути для новой музыки, видео и обложек в таблице — примеры.
+В `assets/audio/sfx/` добавлены пять реальных эффектов WAV/MP3. Шесть музыкальных треков и шоурил работают по существующим внешним ссылкам. Пути для новой музыки, видео и обложек в таблице — примеры.
 
 ## Добавить музыку
 
@@ -50,6 +50,14 @@ node docs/serve-preview.cjs
 Для SoundCloud вместо `src` укажите `url` с настоящей ссылкой на отдельный трек. Если известна точная длительность, можно добавить `duration` в секундах; иначе время отображается как неизвестное. Для локального файла длительность всегда берётся из самого аудио. Если указаны и `src`, и `url`, используется локальный плеер, а ссылка SoundCloud остаётся доступной.
 
 Не требуется добавлять обложку: музыка оформлена как трек-лист. Порядок записей определяется их позицией в массиве.
+
+Жанр добавляется в конец `category.en` и `category.ru` через ` / `, например `PANOPTICON / BOSS THEME / ORCHESTRAL` и `PANOPTICON / ТЕМА БОССА / ОРКЕСТРОВАЯ МУЗЫКА`. Подписи отображаются с учётом выбранного языка.
+
+Для **Panopticon Boss Theme** ссылка SoundCloud указана в `url` объекта с `"id": "panopticon-boss"`. Трек расположен вторым, `duration: 98` задаёт длительность 1:38.
+
+Для **Panopticum Checkpoint Theme** ссылка SoundCloud указана в `url` объекта с `"id": "panopticum-checkpoint"`. Трек расположен третьим, после Panopticon Boss Theme, `duration: 74` задаёт длительность 1:14. Чтобы заменить любой из этих треков, измените его `url`; при пустом `url` запись скрыта. Если длительность нового трека неизвестна, укажите `duration: null`.
+
+Порядок записей: The Cyber Maiden Boss Theme → Panopticon Boss Theme → Panopticum Checkpoint Theme → Original Sin Boss Theme → The Cyber Maiden Combat Theme → Another's Destiny Cutscene Theme.
 
 ## Добавить SFX
 

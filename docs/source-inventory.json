@@ -30,11 +30,11 @@
       "image": "assets/images/steel-sense.png"
     },
     {
-      "id": "global-flood",
-      "title": "Global Flood",
+      "id": "panopticon",
+      "title": "Panopticon",
       "role": "composerSound",
-      "url": "https://eclipsense.itch.io/global-flood",
-      "image": "assets/images/global-flood.png"
+      "url": "https://naspeh.tech/games/tidesofjuice/panopticon",
+      "image": "assets/images/panopticon.png"
     },
     {
       "id": "original-sin",
